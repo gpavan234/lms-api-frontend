@@ -3,7 +3,8 @@
 
 import { ReactNode } from "react";
 import Link from "next/link";
-import { useUser } from "@/hooks/useUser";
+import useUser from "@/hooks/useUser";
+
 import Loader from "@/components/Loader";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

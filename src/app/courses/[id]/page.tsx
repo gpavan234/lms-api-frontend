@@ -1,27 +1,31 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const mockCourses = [
   {
     id: "1",
-    title: "React for Beginners",
-    description: "Learn the basics of React.js including components, hooks, and state management.",
-    content: "This course includes hands-on projects, quizzes, and a final assessment to test your knowledge.",
+    title: "React Basics",
+    description: "Learn the fundamentals of React, components, and JSX.",
+    lessons: 8,
+    duration: "2h 30m",
   },
   {
     id: "2",
-    title: "Next.js Mastery",
-    description: "Build production-ready apps with Next.js, routing, API routes, and deployment.",
-    content: "In this course, you'll learn advanced routing, API integrations, and how to optimize performance.",
+    title: "Node.js for Beginners",
+    description: "Understand Node.js runtime and build REST APIs.",
+    lessons: 10,
+    duration: "3h 10m",
   },
   {
     id: "3",
-    title: "MongoDB with Mongoose",
-    description: "Learn how to design schemas, models, and queries with MongoDB and Mongoose.",
-    content: "We cover CRUD operations, indexing, relationships, and real-world project structures.",
+    title: "MongoDB Essentials",
+    description: "Get started with MongoDB and Mongoose.",
+    lessons: 6,
+    duration: "1h 45m",
   },
 ];
 
@@ -34,28 +38,25 @@ export default function CourseDetailsPage() {
   if (!course) {
     return (
       <main className="p-6">
-        <h1 className="text-2xl font-bold text-red-600">Course Not Found ❌</h1>
+        <h1 className="text-2xl font-bold">Course Not Found ❌</h1>
+        <Link href="/">
+          <Button className="mt-4">⬅ Back to Catalog</Button>
+        </Link>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <Card className="shadow-lg max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-3xl">{course.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-4">{course.description}</p>
-          <p className="text-gray-600">{course.content}</p>
+    <main className="p-6">
+      <Card className="p-6 shadow-lg">
+        <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
+        <p className="text-gray-700 mb-4">{course.description}</p>
+        <p className="text-gray-600">📚 Lessons: {course.lessons}</p>
+        <p className="text-gray-600 mb-6">⏱ Duration: {course.duration}</p>
 
-          <div className="mt-6 flex gap-3">
-            <Button asChild>
-              <a href={`/courses/${course.id}/learn`}>Start Course</a>
-            </Button> 
-            <Button variant="outline">Back to Courses</Button>
-          </div>
-        </CardContent>
+        <Link href={`/learn/${course.id}`}>
+          <Button className="w-full">🚀 Start Course</Button>
+        </Link>
       </Card>
     </main>
   );

@@ -1,46 +1,43 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-const courses = [
+const mockCourses = [
   {
-    id: 1,
-    title: "React for Beginners",
-    description: "Learn the basics of React.js including components, hooks, and state management.",
+    id: "1",
+    title: "React Basics",
+    description: "Learn the fundamentals of React, components, and JSX.",
+    duration: "2h 30m",
   },
   {
-    id: 2,
-    title: "Next.js Mastery",
-    description: "Build production-ready apps with Next.js, routing, API routes, and deployment.",
+    id: "2",
+    title: "Node.js for Beginners",
+    description: "Understand Node.js runtime and build REST APIs.",
+    duration: "3h 10m",
   },
   {
-    id: 3,
-    title: "MongoDB with Mongoose",
-    description: "Learn how to design schemas, models, and queries with MongoDB and Mongoose.",
+    id: "3",
+    title: "MongoDB Essentials",
+    description: "Get started with MongoDB and Mongoose.",
+    duration: "1h 45m",
   },
 ];
 
-export default function CoursesPage() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6">📚 Courses</h1>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {courses.map((course) => (
-          <Card key={course.id} className="shadow-lg">
-            <CardHeader>
-              <CardTitle>{course.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-3">{course.description}</p>
-             <Button asChild className="w-full">
-                <a href={`/courses/${course.id}`}>View Details</a>
-            </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <main className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      {mockCourses.map((course) => (
+        <Card key={course.id} className="p-4 shadow-lg rounded-xl">
+          <h2 className="text-xl font-bold mb-2">{course.title}</h2>
+          <p className="text-gray-600 mb-3">{course.description}</p>
+          <p className="text-sm text-gray-500 mb-4">⏱ {course.duration}</p>
+          <Link href={`/courses/${course.id}`}>
+            <Button className="w-full">Start Learning</Button>
+          </Link>
+        </Card>
+      ))}
     </main>
   );
 }

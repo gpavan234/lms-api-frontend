@@ -1,22 +1,39 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value || "";
+  const token = req.cookies.get("token")?.value || null;
 
-  // Protect all dashboard pages
+  // Protect admin routes
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    if (!token) {
+      // Not logged in → redirect to login
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Decode token to check role (simplified for now)
+    try {
+      const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+      if (payload.role !== "admin") {
+        // Not an admin → redirect to dashboard
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    } catch (error) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  // Protect student dashboard
   if (req.nextUrl.pathname.startsWith("/dashboard")) {
     if (!token) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
   return NextResponse.next();
 }
 
+// Match paths
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*"],
 };
