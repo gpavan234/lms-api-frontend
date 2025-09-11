@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
+import Cookies from "js-cookie";
 interface Question {
   _id?: string;
   text: string;
@@ -54,7 +54,7 @@ export default function QuizDetailPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      const token = Cookies.get("token");
       const res = await fetch(`http://localhost:5000/api/quizzes/${quizId}/questions`, {
         method: "POST",
         headers: {
