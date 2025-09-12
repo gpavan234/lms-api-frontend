@@ -40,7 +40,6 @@ export default function EditQuizPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const token = Cookies.get("token");
       const res = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
