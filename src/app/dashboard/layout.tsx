@@ -22,11 +22,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {user?.role === "admin" ? (
             <>
+             <Link href="/dashboard/add-instructor" className="hover:bg-gray-700 px-3 py-2 rounded">Add Instructor</Link>
               <Link href="/dashboard/users" className="hover:bg-gray-700 px-3 py-2 rounded">Manage Users</Link>
               <Link href="/dashboard/courses" className="hover:bg-gray-700 px-3 py-2 rounded">Manage Courses</Link>
             </>
           ) : (
             <>
+                    <Link href="/dashboard/add-instructor" className="hover:bg-gray-700 px-3 py-2 rounded">Add Instructor</Link>
               <Link href="/dashboard/my-courses" className="hover:bg-gray-700 px-3 py-2 rounded">My Courses</Link>
               <Link href="/dashboard/quizzes" className="hover:bg-gray-700 px-3 py-2 rounded">My Quizzes</Link>
             </>

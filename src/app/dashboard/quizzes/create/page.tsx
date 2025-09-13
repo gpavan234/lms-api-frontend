@@ -2,15 +2,29 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
+
 export default function CreateQuizPage() {
   const router = useRouter();
+
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState(""); // ✅ new state
-  const [questions, setQuestions] = useState<string[]>([]);
+  const [description, setDescription] = useState("");
+  const [questions, setQuestions] = useState<string[]>([""]);
   const [loading, setLoading] = useState(false);
+
+  const handleQuestionChange = (index: number, value: string) => {
+    const newQuestions = [...questions];
+    newQuestions[index] = value;
+    setQuestions(newQuestions);
+  };
+
+  const addQuestion = () => setQuestions([...questions, ""]);
+  const removeQuestion = (index: number) => {
+    const newQuestions = questions.filter((_, i) => i !== index);
+    setQuestions(newQuestions);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +40,12 @@ export default function CreateQuizPage() {
         },
         body: JSON.stringify({
           title,
-          description, // ✅ send description
-          questions,
+          description,
+          questions: questions.map((q) => ({
+            question: q,
+            options: ["Option 1", "Option 2", "Option 3", "Option 4"], // default
+            correctAnswer: 0, // default
+          })),
         }),
       });
 
@@ -46,7 +64,6 @@ export default function CreateQuizPage() {
     <Card className="p-6 max-w-lg mx-auto mt-10">
       <h1 className="text-2xl font-bold mb-4">Create New Quiz</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Title */}
         <div>
           <label className="block text-sm font-medium">Quiz Title</label>
           <input
@@ -58,7 +75,6 @@ export default function CreateQuizPage() {
           />
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-sm font-medium">Description</label>
           <textarea
@@ -66,21 +82,29 @@ export default function CreateQuizPage() {
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border rounded px-3 py-2 mt-1"
             rows={3}
-            placeholder="Enter quiz description..."
             required
           />
         </div>
 
-        {/* Questions placeholder */}
         <div>
           <label className="block text-sm font-medium">Questions</label>
-          <input
-            type="text"
-            value={questions.join(",")}
-            onChange={(e) => setQuestions(e.target.value.split(","))}
-            className="w-full border rounded px-3 py-2 mt-1"
-            placeholder="Enter questions separated by commas"
-          />
+          {questions.map((q, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={q}
+                onChange={(e) => handleQuestionChange(index, e.target.value)}
+                className="flex-1 border rounded px-3 py-2"
+                required
+              />
+              <Button type="button" variant="destructive" onClick={() => removeQuestion(index)}>
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button type="button" onClick={addQuestion}>
+            Add Question
+          </Button>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>

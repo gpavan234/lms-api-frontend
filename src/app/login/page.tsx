@@ -61,8 +61,20 @@ export default function LoginPage() {
       // ✅ Save token in cookies
       Cookies.set("token", data.token, { expires: 1, secure: true, sameSite: "strict" });
 
-      // redirect to dashboard
-      router.push("/dashboard");
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        // Redirect based on role
+        if (data.role === "instructor") {
+          router.push("/dashboard");
+        } else if (data.role === "admin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard/my-courses");
+        }
+
+      } else {
+        alert(data.message);
+      }
     } catch (error: any) {
       console.error(error);
       setErrors((prev) => ({ ...prev, email: error.message }));
@@ -116,4 +128,4 @@ export default function LoginPage() {
       </form>
     </main>
   );
-}
+} 

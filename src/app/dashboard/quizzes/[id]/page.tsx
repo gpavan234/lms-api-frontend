@@ -1,154 +1,115 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import Cookies from "js-cookie";
+import useUser from "@/hooks/useUser";
+
 interface Question {
-  _id?: string;
-  text: string;
+  question: string;
   options: string[];
-  answer: string;
+  correctAnswer: number;
 }
 
-export default function QuizDetailPage() {
+interface Quiz {
+  _id: string;
+  title: string;
+  description: string;
+  questions: Question[];
+}
+
+export default function QuizPage() {
   const params = useParams();
+  const router = useRouter();
   const quizId = params.id as string;
 
-  const [quiz, setQuiz] = useState<any>(null);
+  const { user, loading: userLoading } = useUser();
+
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [answers, setAnswers] = useState<{ questionId: number; selectedOption: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Add question state
-  const [text, setText] = useState("");
-  const [options, setOptions] = useState(["", "", "", ""]);
-  const [answer, setAnswer] = useState("");
-
-  // 🔹 Fetch quiz details
   useEffect(() => {
-    const fetchQuiz = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch quiz");
-        const data = await res.json();
-        setQuiz(data);
-      } catch (err) {
-        console.error(err);
-        alert("❌ Error loading quiz");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchQuiz();
+    const token = Cookies.get("token");
+    fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setQuiz(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [quizId]);
 
-  // 🔹 Add a new question
-  const handleAddQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleOptionSelect = (questionIndex: number, optionIndex: number) => {
+    const updated = [...answers];
+    updated[questionIndex] = { questionId: questionIndex, selectedOption: optionIndex };
+    setAnswers(updated);
+  };
 
+  const handleSubmit = async () => {
+    setSubmitting(true);
     try {
       const token = Cookies.get("token");
-      const res = await fetch(`http://localhost:5000/api/quizzes/${quizId}/questions`, {
+      const res = await fetch(`http://localhost:5000/api/quizzes/${quizId}/submit`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text, options, answer }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ answers }),
       });
 
-      if (!res.ok) throw new Error("Failed to add question");
-
-      const newQuestion = await res.json();
-      setQuiz((prev: any) => ({
-        ...prev,
-        questions: [...(prev?.questions || []), newQuestion],
-      }));
-
-      // Reset form
-      setText("");
-      setOptions(["", "", "", ""]);
-      setAnswer("");
+      if (!res.ok) throw new Error("Submit failed");
+      const data = await res.json();
+      alert(`Quiz submitted! Score: ${data.score}/${data.totalQuestions}`);
+      router.push("/dashboard/my-courses");
     } catch (err) {
       console.error(err);
-      alert("❌ Error adding question");
+      alert("Error submitting quiz");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) return <p className="text-center">Loading...</p>;
-  if (!quiz) return <p className="text-center">Quiz not found.</p>;
+  if (loading || userLoading) return <p>Loading...</p>;
+  if (!quiz) return <p>Quiz not found</p>;
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card className="p-6 shadow-md">
-        <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
-        <p className="text-gray-600 mb-4">{quiz.description}</p>
+    <div className="max-w-3xl mx-auto mt-10 space-y-6">
+      <Card className="p-6">
+        <h1 className="text-2xl font-bold">{quiz.title}</h1>
+        <p className="text-gray-700 mb-4">{quiz.description}</p>
 
-        <h2 className="text-lg font-semibold mb-2">Questions</h2>
-        {quiz.questions?.length > 0 ? (
-          <ul className="list-disc pl-5 mb-4">
-            {quiz.questions.map((q: Question, idx: number) => (
-              <li key={q._id || idx} className="mb-2">
-                <p className="font-medium">{q.text}</p>
-                <ul className="pl-4 list-decimal text-sm text-gray-700">
-                  {q.options.map((opt, i) => (
-                    <li key={i} className={opt === q.answer ? "font-bold text-green-600" : ""}>
-                      {opt}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
+        {user?.role === "instructor" || user?.role === "admin" ? (
+          <div className="flex gap-2 mb-4">
+            <Button onClick={() => router.push(`/dashboard/quizzes/${quiz._id}/edit`)}>Edit Quiz</Button>
+            <Button onClick={() => router.push(`/dashboard/quizzes/${quiz._id}/questions`)}>Add Questions</Button>
+          </div>
         ) : (
-          <p className="text-gray-500 mb-4">No questions added yet.</p>
+          <div className="space-y-4">
+            {quiz.questions.map((q, idx) => (
+              <Card key={idx} className="p-4">
+                <p className="font-medium">{q.question}</p>
+                <div className="flex flex-col gap-2 mt-2">
+                  {q.options.map((opt, i) => (
+                    <label key={i} className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`question-${idx}`}
+                        checked={answers[idx]?.selectedOption === i}
+                        onChange={() => handleOptionSelect(idx, i)}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              </Card>
+            ))}
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit Quiz"}
+            </Button>
+          </div>
         )}
-
-        <hr className="my-4" />
-
-        <h2 className="text-lg font-semibold mb-2">➕ Add Question</h2>
-        <form onSubmit={handleAddQuestion} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Question Text</label>
-            <Input value={text} onChange={(e) => setText(e.target.value)} required />
-          </div>
-
-          {options.map((opt, idx) => (
-            <div key={idx}>
-              <label className="block text-sm font-medium mb-1">Option {idx + 1}</label>
-              <Input
-                value={opt}
-                onChange={(e) => {
-                  const newOptions = [...options];
-                  newOptions[idx] = e.target.value;
-                  setOptions(newOptions);
-                }}
-                required
-              />
-            </div>
-          ))}
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Correct Answer</label>
-            <Textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="Copy one of the above options"
-              required
-            />
-          </div>
-
-          <Button type="submit" className="w-full">
-            Add Question
-          </Button>
-        </form>
       </Card>
     </div>
   );
