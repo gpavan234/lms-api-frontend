@@ -28,7 +28,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </>
           ) : (
             <>
-                    <Link href="/dashboard/add-instructor" className="hover:bg-gray-700 px-3 py-2 rounded">Add Instructor</Link>
               <Link href="/dashboard/my-courses" className="hover:bg-gray-700 px-3 py-2 rounded">My Courses</Link>
               <Link href="/dashboard/quizzes" className="hover:bg-gray-700 px-3 py-2 rounded">My Quizzes</Link>
             </>
