@@ -70,12 +70,12 @@ export default function InstructorDashboard() {
                 >
                   Add Quiz
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/dashboard/courses/${course._id}/edit`)}
-                >
-                  Edit Course
-                </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push(`/dashboard/courses/${course._id}/edit`)}
+                  >
+                    Edit Course
+                  </Button>
               </div>
             </Card>
           ))}
