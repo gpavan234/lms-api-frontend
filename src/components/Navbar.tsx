@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -10,11 +9,12 @@ export default function Navbar() {
   const router = useRouter();
   const { user, loading } = useUser();
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    router.push("/login");
-  };
-
+const handleLogout = () => {
+  Cookies.remove("token");
+  window.dispatchEvent(new Event("auth-change")); // trigger reactive update
+  router.push("/login");
+};
+  // while loading token info, don't render user links
   if (loading) return null;
 
   return (
@@ -24,14 +24,19 @@ export default function Navbar() {
         {user ? (
           <>
             <span className="font-medium">{user.name}</span>
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/profile">Profile</Link>
-            <button onClick={handleLogout} className="text-red-500 hover:underline">Logout</button>
+            <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+            <Link href="/profile" className="hover:underline">Profile</Link>
+            <button
+              onClick={handleLogout}
+              className="text-red-500 hover:underline"
+            >
+              Logout
+            </button>
           </>
         ) : (
           <>
-            <Link href="/login">Login</Link>
-            <Link href="/register">Register</Link>
+            <Link href="/login" className="hover:underline">Login</Link>
+            <Link href="/register" className="hover:underline">Register</Link>
           </>
         )}
       </div>

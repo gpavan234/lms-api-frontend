@@ -1,112 +1,67 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface Course {
   _id: string;
   title: string;
   description: string;
-  instructor?: { name: string };
-}
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
 }
 
 export default function CoursesPage() {
-  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  // ✅ Fetch logged-in user
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = Cookies.get("token");
-        if (!token) return;
+    const token = Cookies.get("token");
 
-        const res = await fetch("http://localhost:5000/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  // ✅ Fetch courses
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("http://localhost:5000/api/courses");
-        const data = await res.json();
-        setCourses(data);
-      } catch (err) {
+    fetch("http://localhost:5000/api/courses", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setCourses(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
         console.error("Error fetching courses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <p className="p-4">Loading...</p>;
 
   return (
-    <main className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="max-w-4xl mx-auto mt-10 space-y-4">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">📚 Courses</h1>
-
-        {/* ✅ Show only for instructors/admin */}
-        {user && (user.role === "instructor" || user.role === "admin") && (
-          <Button onClick={() => router.push("/dashboard/courses/add")}>
-            ➕ Add New Course
-          </Button>
-        )}
+        <Button onClick={() => router.push("/dashboard/courses/add")}>
+          ➕ Add New Course
+        </Button>
       </div>
 
-      {loading ? (
-        <p>Loading...</p>
+      {courses.length === 0 ? (
+        <p className="text-gray-600">No courses available.</p>
       ) : (
-        <div className="flex flex-wrap gap-6">
-          {courses.length > 0 ? (
-            courses.map((course) => (
-              <Card
-                key={course._id}
-                className="w-full sm:w-[300px] shadow-md hover:shadow-lg transition"
-              >
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">{course.title}</h2>
-                  <p className="text-gray-600 text-sm mt-2">
-                    {course.description}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    👨‍🏫 {course.instructor?.name || "Unknown Instructor"}
-                  </p>
-                  <Button className="mt-4 w-full">View Details</Button>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <p>No courses available.</p>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {courses.map((course) => (
+            <Card
+              key={course._id}
+              className="p-4 cursor-pointer hover:shadow-lg transition"
+              onClick={() =>
+                router.push(`/dashboard/courses/${course._id}`)
+              }
+            >
+              <h2 className="text-lg font-semibold">{course.title}</h2>
+              <p className="text-gray-600">{course.description}</p>
+            </Card>
+          ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }
