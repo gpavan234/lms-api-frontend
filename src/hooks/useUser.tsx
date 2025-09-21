@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 interface User {
   id: string;
@@ -15,13 +15,18 @@ export default function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadUser = () => {
+  useEffect(() => {
     const token = Cookies.get("token");
 
     if (token) {
       try {
+        // decode token to get user info
         const decoded = jwtDecode<{ id: string; name: string; role: string }>(token);
-        setUser(decoded);
+        setUser({
+          id: decoded.id,
+          name: decoded.name,
+          role: decoded.role,
+        });
       } catch (err) {
         console.error("Invalid token", err);
         setUser(null);
@@ -29,20 +34,15 @@ export default function useUser() {
     } else {
       setUser(null);
     }
+
     setLoading(false);
-  };
-
-  useEffect(() => {
-    loadUser();
-
-    // Listen for login/logout events
-    const handleTokenChange = () => loadUser();
-    window.addEventListener("auth-change", handleTokenChange);
-
-    return () => {
-      window.removeEventListener("auth-change", handleTokenChange);
-    };
   }, []);
 
-  return { user, loading };
+  // Optional: helper to force logout and remove token
+  const logout = () => {
+    Cookies.remove("token");
+    setUser(null);
+  };
+
+  return { user, loading, logout };
 }
