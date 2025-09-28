@@ -22,8 +22,6 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
       router.push("/dashboard"); // redirect if role not allowed
     }
   }, [user, loading, router, allowedRoles]);
-
   if (loading || !user) return <Loader />;
-
   return <>{children}</>;
 }
