@@ -19,7 +19,6 @@ export default function useUser() {
 
     if (token) {
       try {
-        // decode token to get user info
         const decoded = jwtDecode<{ id: string; name: string; role: string }>(token);
         setUser({
           id: decoded.id,
@@ -36,8 +35,6 @@ export default function useUser() {
 
     setLoading(false);
   }, []);
-
-  // Optional: helper to force logout and remove token
   const logout = () => {
     Cookies.remove("token");
     setUser(null);
