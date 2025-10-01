@@ -39,6 +39,5 @@ export default function useUser() {
     Cookies.remove("token");
     setUser(null);
   };
-
   return { user, loading, logout };
 }
