@@ -52,7 +52,6 @@ export default function Navbar() {
   const { user, loading, logout } = useUser();
 
   if (loading) return null;
-
   return (
     <nav className="flex justify-between items-center p-4 bg-gray-100 shadow">
       <h1 className="text-xl font-bold">LMS</h1>
