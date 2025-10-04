@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 type LayoutProps = {
   children: ReactNode;
 };
-
 export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
 
