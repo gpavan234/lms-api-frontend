@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number;
 }
-
 export function Progress({ value, className, ...props }: ProgressProps) {
   return (
     <div
